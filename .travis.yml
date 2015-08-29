@@ -27,8 +27,8 @@ before_script:
  - cmake ..
 script: 
  - make
- - cd ../jni
- - $HOME/android-ndk-root/ndk-build -j4
-
+ - pwd
+ - cd ../jni/
+ - $ANDROID_NDK_HOME/ndk-build -j4
 
  
