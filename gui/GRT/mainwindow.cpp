@@ -88,7 +88,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     initHelpView();
 
     //Initialize the signals and slots
-    initSignalsAndSlots();
+    initSignalsAndSlots();   
+
+    ///
+    initMyo();
 
     //Set the setup view as the default view
     showSetupView();
@@ -673,6 +676,7 @@ bool MainWindow::initSignalsAndSlots(){
     connect(ui->dataIO_infoButton, SIGNAL(clicked()), this, SLOT(showDataIOInfo()));
     connect(ui->dataIO_enableOSCInputButton, SIGNAL(clicked()), this, SLOT(updateOSCInput()));
     connect(ui->dataIO_enableMouseInputButton, SIGNAL(clicked()), this, SLOT(updateMouseInput()));
+    connect(ui->dataIO_enableMyoInputButton, SIGNAL(clicked()), this, SLOT(updateMyoInput()));
     connect(ui->dataIO_enableOSCCommandsButton, SIGNAL(clicked()), this, SLOT(updateOSCControlCommands()));
     connect(ui->dataIO_mainDataAddressTextField, SIGNAL(editingFinished()), this, SLOT(updateDataAddress()));
     connect(ui->dataIO_oscIncomingPortSpinBox, SIGNAL(valueChanged(int)), &core, SLOT(resetOSCServer(const int)));
@@ -854,6 +858,14 @@ bool MainWindow::initSignalsAndSlots(){
     QObject::connect(ctrlLShortcut, SIGNAL(activated()), this, SLOT(ctrlLShortcut()));
 
     return true;
+}
+
+
+
+bool MainWindow::initMyo(){
+
+    QObject::connect(&myoDataCollector, &MyoDataCollector::ArmSync, this, &MainWindow::armSync);
+    QObject::connect(&myoDataCollector, &MyoDataCollector::ArmUnsync, this, &MainWindow::armUnsync);
 }
 
 void MainWindow::updateMainView(const int tabIndex){
@@ -1239,6 +1251,21 @@ void MainWindow::updateMouseInput(){
         setNumInputs( 2 );
     }else{
 
+    }
+
+}
+
+void MainWindow::updateMyoInput(){
+
+    bool enableMyoInput = ui->dataIO_enableMyoInputButton->isChecked();
+
+    if( enableMyoInput ){
+        setNumInputs( 3 ); // 3 axis + 7 ekg
+        QObject::connect(&myoDataCollector, &MyoDataCollector::OrientationData,
+                         this, &MainWindow::orientationData);
+    }else{
+        QObject::disconnect(&myoDataCollector, &MyoDataCollector::OrientationData,
+                            this, &MainWindow::orientationData);
     }
 
 }
@@ -3698,11 +3725,35 @@ void MainWindow::updateMaximumGraphRefreshRate(const double framerate){
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////     MYO DATA FUNCTIONS   ///////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+void MainWindow::armSync(myo::Myo* myo, uint64_t timestamp, myo::Arm arm, myo::XDirection xDirection, float rotation,
+             myo::WarmupState warmupState){
+    ui->dataIO_enableMyoInputButton->setEnabled(true);
+}
+
+void MainWindow::armUnsync(myo::Myo* myo, uint64_t timestamp) {
+    ui->dataIO_enableMyoInputButton->setEnabled(false);
+}
+
+void MainWindow::orientationData(myo::Myo*, uint64_t, const myo::Quaternion<float> quat, float roll, float pitch, float yaw) {
+    OSCMessagePtr msg( new OSCMessage );
+
+    msg->setSenderAddress( "localhost" );
+    msg->setAddressPattern( core.getIncomingDataAddress() );
+    msg->addArg( roll );
+    msg->addArg( pitch );
+    msg->addArg( yaw );
+
+    //Add the message to the OSC server, this will make it appear like an external message
+    core.addMessaage( msg );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////     CORE DATA FUNCTIONS   ///////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void MainWindow::coreTick(){
-
     if( ui->dataIO_enableMouseInputButton->isChecked() ){
 
         //Generate a dummy OSC data message for the mouse

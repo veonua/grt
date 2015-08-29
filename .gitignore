@@ -6,3 +6,5 @@ libgrt.a
 moc*
 build/examples/*.txt
 build/examples/*.csv
+gui/GRT/GRT.pro.user
+gui/build-*

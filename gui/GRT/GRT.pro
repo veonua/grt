@@ -268,7 +268,18 @@ SOURCES += main.cpp\
         timeseriesgraph.cpp \
         bargraph.cpp \
         versioninfo.cpp \
-        featureplot.cpp
+        featureplot.cpp \
+        myodatacollector.cpp
+
+win32{
+    MYO_PATH = C:/dev/myo
+    MYO_INCLUDE = C:/dev/myo/include
+    LIBS += -L$${MYO_PATH}/lib/ -lmyo32
+    !win32-g++: PRE_TARGETDEPS += $${MYO_PATH}/lib/myo32.lib
+
+    INCLUDEPATH += $${MYO_INCLUDE}
+    DEPENDPATH += $${MYO_INCLUDE}
+}
 
 HEADERS  += mainwindow.h \
         OSC/OSCMessage.h \
@@ -293,7 +304,21 @@ HEADERS  += mainwindow.h \
         timeseriesgraph.h \
         bargraph.h \
         versioninfo.h \
-        featureplot.h
+        featureplot.h \
+        $${MYO_INCLUDE}/myo/cxx/detail/ThrowOnError.hpp \
+        $${MYO_INCLUDE}/myo/cxx/impl/Hub_impl.hpp \
+        $${MYO_INCLUDE}/myo/cxx/impl/Myo_impl.hpp \
+        $${MYO_INCLUDE}/myo/cxx/impl/Pose_impl.hpp \
+        $${MYO_INCLUDE}/myo/cxx/DeviceListener.hpp \
+        $${MYO_INCLUDE}/myo/cxx/Hub.hpp \
+        $${MYO_INCLUDE}/myo/cxx/Myo.hpp \
+        $${MYO_INCLUDE}/myo/cxx/Pose.hpp \
+        $${MYO_INCLUDE}/myo/cxx/Quaternion.hpp \
+        $${MYO_INCLUDE}/myo/cxx/Vector3.hpp \
+        $${MYO_INCLUDE}/myo/libmyo/detail/visibility.h \
+        $${MYO_INCLUDE}/myo/libmyo.h \
+        $${MYO_INCLUDE}/myo/myo.hpp \
+        myodatacollector.h
 
 FORMS += mainwindow.ui \
     timeseriesgraph.ui \
@@ -307,3 +332,5 @@ OTHER_FILES += Resources/Images/Button1.png \
                Resources/Images/TimeseriesModeImage.png
 
 RESOURCES += Resources/resource.qrc
+
+QMAKE_CFLAGS = -Wno-unused-parameter

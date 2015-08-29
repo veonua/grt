@@ -17,6 +17,7 @@
 #include "bargraph.h"
 #include "featureplot.h"
 #include "versioninfo.h"
+#include "myodatacollector.h"
 
 enum Views{
     SETUP_VIEW=0,
@@ -179,6 +180,7 @@ private slots:
     void showDataIOInfo();
     void updateOSCInput();
     void updateMouseInput();
+    void updateMyoInput();
     void updateOSCControlCommands();
     void resetOSCServer(const int port);
     void resetOSCClient();
@@ -301,6 +303,12 @@ private slots:
     void updateData( const GRT::VectorDouble &data );
     void updateTargetVector( const GRT::VectorDouble &targetVector );
 
+
+    /////////////////////////////////// MYO DATA FUNCTIONS /////////////////////////////////
+    void armSync(myo::Myo* myo, uint64_t timestamp, myo::Arm arm, myo::XDirection xDirection, float rotation,
+                 myo::WarmupState warmupState);
+    void armUnsync(myo::Myo* myo, uint64_t timestamp);
+    void orientationData(myo::Myo*, uint64_t, const myo::Quaternion<float> quat, float roll, float pitch, float yaw);
 private:
     bool initMainMenu();
     bool initSetupView();
@@ -313,6 +321,7 @@ private:
     bool initSettingsView();
     bool initHelpView();
     bool initSignalsAndSlots();
+    bool initMyo();
     virtual void notify(const GRT::TrainingLogMessage &log);
     virtual void notify(const GRT::TestingLogMessage &log);
     virtual void notify(const GRT::WarningLogMessage &log);
@@ -345,7 +354,7 @@ private:
     GRT::Timer lastGuiUpdateTimer;
 
     GRT::SwipeDetector swipeDetector;
-
+    MyoDataCollector myoDataCollector;
 };
 
 #endif // MAINWINDOW_H
