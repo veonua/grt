@@ -22,11 +22,13 @@ before_install:
  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 before_script:
  - cd build
+ - mkdir tmp
+ - cd tmp
  - cmake ..
 script: 
  - make
  - pwd
- - cd ../jni/
+ - cd ../../jni/
  - $ANDROID_NDK_HOME/ndk-build -j4
 
  
