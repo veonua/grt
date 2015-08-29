@@ -1,5 +1,4 @@
 language: cpp,android
-sudo: false
 android:
   components:
     - build-tools-23.0.0
